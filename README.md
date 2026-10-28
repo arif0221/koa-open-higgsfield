@@ -1,6 +1,6 @@
 # KOA Studio – Setup
 
-Dieses Repo ist privat. Nicht weitergeben, nicht öffentlich machen.
+Die Keys stehen nicht im Repo. Die Datei `.env.local` kommt separat und gehört nie in Git.
 
 ## Einrichten
 
