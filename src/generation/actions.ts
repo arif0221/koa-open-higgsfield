@@ -2,19 +2,21 @@
 
 import { cookies } from "next/headers";
 
+import { archiveIfDone, rememberSubmit } from "./archive";
 import { getModel, parseSettings } from "./catalog";
 import type { GenerationPlane } from "./catalog/types";
 import {
   MissingCredentialsError,
   PLATFORM_KEY_COOKIE,
   PLATFORM_KEY_COOKIE_OPTIONS,
-  decodeCredentials,
   encodeCredentials,
   parseCredentialInput,
+  resolveCredentials,
 } from "./credentials";
 import { createPlatformClient } from "./platform";
 import type { StatusResult } from "./platform";
 import { toPlatform } from "./to-platform";
+import { logIfFinal, logSubmit } from "./usage-log";
 
 export async function savePlatformCredentials(data: unknown) {
   const { apiKey } = parseCredentialInput(data);
@@ -38,7 +40,11 @@ export async function submitGeneration(plane: GenerationPlane) {
     settings: parseSettings(model, plane.settings),
   };
   const { path, body } = toPlatform(parsed);
-  return createPlatformClient(await readCredentials()).submit(path, body);
+  const credentials = await readCredentials();
+  const queued = await createPlatformClient(credentials).submit(path, body);
+  await rememberSubmit(queued.requestId, parsed.model, parsed.prompt.text);
+  await logSubmit(queued.requestId, credentials.apiKey, parsed);
+  return queued;
 }
 
 /** Every request in flight, answered in one round trip. Next dispatches server
@@ -47,11 +53,15 @@ export async function submitGeneration(plane: GenerationPlane) {
     genuinely parallel. */
 export async function getGenerationStatuses(data: unknown): Promise<StatusResult[]> {
   const requestIds = parseRequestIds(data);
-  const client = createPlatformClient(await readCredentials());
+  const credentials = await readCredentials();
+  const client = createPlatformClient(credentials);
   return Promise.all(
     requestIds.map(async (requestId): Promise<StatusResult> => {
       try {
-        return { requestId, status: await client.status(requestId) };
+        const status = await client.status(requestId);
+        archiveIfDone(requestId, status);
+        logIfFinal(requestId, credentials.apiKey, status);
+        return { requestId, status };
       } catch (caught) {
         return { requestId, error: caught instanceof Error ? caught.message : String(caught) };
       }
@@ -61,7 +71,7 @@ export async function getGenerationStatuses(data: unknown): Promise<StatusResult
 
 async function readStoredCredentials() {
   const jar = await cookies();
-  return decodeCredentials(jar.get(PLATFORM_KEY_COOKIE)?.value);
+  return resolveCredentials(jar.get(PLATFORM_KEY_COOKIE)?.value);
 }
 
 async function readCredentials() {

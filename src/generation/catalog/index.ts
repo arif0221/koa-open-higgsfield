@@ -1,6 +1,7 @@
 import { dop } from "./dop";
 import { flux2 } from "./flux-2";
 import { flux3 } from "./flux-3";
+import { genjutsuMotion } from "./genjutsu";
 import { grokImagine2 } from "./grok-imagine-2";
 import { grokImagineVideo15 } from "./grok-imagine-video-1.5";
 import { happyHorse1 } from "./happy-horse-1";
@@ -16,6 +17,7 @@ import {
   kling3Std,
   kling3Turbo,
 } from "./kling-3";
+import { kling4, kling4Edit } from "./kling-4";
 import { klingO1 } from "./kling-o1";
 import { klingO3 } from "./kling-o3";
 import { ltx25Fast } from "./ltx-2.5-fast";
@@ -42,6 +44,9 @@ export const MODELS: readonly ModelEntry[] = [
   seedance25,
   seedance25Edit,
   seedance25Extend,
+  genjutsuMotion,
+  kling4,
+  kling4Edit,
   seedance2,
   seedance2Fast,
   seedance2Mini,

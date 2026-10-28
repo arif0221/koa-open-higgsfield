@@ -1,3 +1,45 @@
+# KOA Studio – Setup
+
+Dieses Repo ist privat. Nicht weitergeben, nicht öffentlich machen.
+
+## Einrichten
+
+1. Node.js 22 installieren: https://nodejs.org
+2. Repo klonen und Pakete installieren:
+
+   ```bash
+   git clone https://github.com/arif0221/koa-open-higgsfield.git
+   cd koa-open-higgsfield
+   npx -y pnpm@10 install
+   ```
+
+3. Die Datei `.env.local` mit den Keys bekommst du separat. Lege sie in den
+   Projektordner (neben `package.json`) und starte dann `npx -y pnpm@10 dev`.
+4. http://localhost:3000 öffnen. Der Higgsfield-Key kommt aus `.env.local`,
+   in der App muss nichts eingegeben werden.
+
+## Pfade anpassen
+
+In `.env.local` stehen Ordnerpfade vom Mac. Auf deinem Rechner anpassen,
+z. B. unter Windows mit Google Drive for Desktop:
+
+```
+ARCHIVE_DIR=G:\Meine Ablage\OpenHiggsfield
+USAGE_LOG_DIR=G:\Meine Ablage\OpenHiggsfield-Log
+```
+
+`ARCHIVE_DIR`: hier landet jedes fertige Video automatisch, sortiert nach
+Monat und Tag.
+
+## Hinweise
+
+- Audio nur als WAV, Video nur als MP4 hochladen.
+- Läufe dauern bei Genjutsu 7–20 Minuten. Wenn die App „timed out“ meldet,
+  läuft der Job trotzdem weiter: `http://localhost:3000/api/recover?id=<request id>`
+  holt ihn ab.
+
+---
+
 # OpenHiggsfield AI — Open-Source Alternative to Higgsfield AI
 
 > **The free, open-source alternative to Higgsfield AI.** Generate images and
@@ -47,7 +89,7 @@ Next.js 16 App Router on Vercel · React 19 · plain CSS · Zustand · pnpm
 - **Batch.** Up to 4 results per press. Models with a native count setting use it;
   the rest are submitted once per result, each clearing its own tile.
 - **Live run lifecycle.** Skeletons open in the grid on submit, the request is
-  polled every 4s until a terminal status (10-minute deadline), and each finished
+  polled every 4s until a terminal status (30-minute deadline), and each finished
   result blooms into place on its own clock.
 
 ### Gallery

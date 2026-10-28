@@ -5,7 +5,8 @@ import type { GenerationStatus, StatusResult } from "./platform";
 const TERMINAL = new Set(["completed", "failed", "nsfw", "canceled"]);
 
 export const POLL_INTERVAL_MS = 4000;
-export const POLL_DEADLINE_MS = 10 * 60_000;
+/** Genjutsu runs can take well over 10 minutes. */
+export const POLL_DEADLINE_MS = 30 * 60_000;
 /** Rounds allowed to fail back to back before the watches are given up on. One
     dropped round must not end every generation in flight. */
 const MAX_MISSES = 3;

@@ -32,6 +32,20 @@ export function decodeCredentials(raw: string | undefined): { apiKey: string } |
   }
 }
 
+/** The browser's key wins; HF_API_KEY (id:secret) is the shared fallback so a
+    checkout works without anyone pasting the key. */
+export function resolveCredentials(cookie: string | undefined): { apiKey: string } | null {
+  const fromCookie = decodeCredentials(cookie);
+  if (fromCookie) return fromCookie;
+  const fromEnv = process.env.HF_API_KEY?.trim();
+  if (!fromEnv) return null;
+  try {
+    return { apiKey: requireIdAndSecret(fromEnv) };
+  } catch {
+    return null;
+  }
+}
+
 export function parseCredentialInput(data: unknown): { apiKey: string } {
   if (data === null || typeof data !== "object" || Array.isArray(data)) {
     throw new Error("Enter an API key");

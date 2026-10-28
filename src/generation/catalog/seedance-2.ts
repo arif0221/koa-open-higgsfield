@@ -16,7 +16,7 @@ export const seedance2: ModelEntry = {
   roles: seedanceRoles,
   settings: {
     ...seedanceSettings,
-    resolution: { type: "enum", values: ["480p", "720p", "1080p", "4k"], default: "720p" },
+    resolution: { type: "enum", values: ["480p", "720p", "1080p", "4k"], default: "480p" },
   },
 };
 
@@ -27,7 +27,7 @@ export const seedance2Fast: ModelEntry = {
   roles: seedanceRoles,
   settings: {
     ...seedanceSettings,
-    resolution: { type: "enum", values: ["480p", "720p"], default: "720p" },
+    resolution: { type: "enum", values: ["480p", "720p"], default: "480p" },
   },
 };
 
@@ -38,6 +38,6 @@ export const seedance2Mini: ModelEntry = {
   roles: seedanceRoles,
   settings: {
     ...seedanceSettings,
-    resolution: { type: "enum", values: ["480p", "720p"], default: "720p" },
+    resolution: { type: "enum", values: ["480p", "720p"], default: "480p" },
   },
 };

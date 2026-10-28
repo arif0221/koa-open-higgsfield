@@ -19,6 +19,9 @@ const MAP: Record<string, Mapper> = {
   "seedance-2.5": (plane) => mapSeedance(plane, "bytedance/seedance-2.5"),
   "seedance-2.5-edit": (plane) => mapSeedanceSource(plane, "bytedance/seedance-2.5/video-edit", false),
   "seedance-2.5-extend": (plane) => mapSeedanceSource(plane, "bytedance/seedance-2.5/video-extend", true),
+  "genjutsu-motion": (plane) => mapGenjutsuMotion(plane, "higgsfield/genjutsu/motion-transfer/v1.0"),
+  "kling-4": mapKling4,
+  "kling-4-edit": mapKling4Edit,
 };
 
 export function toPlatform(plane: GenerationPlane): Mapped {
@@ -90,6 +93,84 @@ function mapKlingMotion(plane: GenerationPlane, path: string): Mapped {
       ...(video ? { video_url: video } : {}),
       keep_original_sound: plane.settings.keepOriginalSound ? "yes" : "no",
       character_orientation: plane.settings.characterOrientation,
+    },
+  };
+}
+
+function mapGenjutsuMotion(plane: GenerationPlane, path: string): Mapped {
+  const video = urls(plane, "video")[0];
+  const refs = urls(plane, "reference");
+  if (!video) throw new Error("Genjutsu needs a source video");
+  if (!refs.length) throw new Error("Genjutsu needs at least one reference image");
+  return {
+    path,
+    body: {
+      video_url: video,
+      image_urls: refs,
+      ...(plane.prompt.text.trim() ? { prompt: plane.prompt.text } : {}),
+      ...(plane.settings.resolution ? { resolution: plane.settings.resolution } : {}),
+    },
+  };
+}
+
+function kling4Body(plane: GenerationPlane) {
+  return {
+    ...(plane.prompt.text.trim() ? { prompt: plane.prompt.text } : {}),
+    duration: plane.settings.duration,
+    resolution: plane.settings.resolution,
+  };
+}
+
+function mapKling4(plane: GenerationPlane): Mapped {
+  const start = urls(plane, "start")[0];
+  const end = urls(plane, "end")[0];
+  const refs = urls(plane, "reference");
+  const videos = urls(plane, "video");
+  const aspect = plane.settings.aspectRatio;
+  if (start) {
+    if (refs.length > 8) throw new Error("Kling 4.0 takes at most 8 middle frames with a start frame");
+    // No aspect ratio here: the frames set the framing.
+    return {
+      path: "kling-video/v4.0/image-to-video",
+      body: {
+        ...kling4Body(plane),
+        image_url: start,
+        ...(refs.length ? { image_urls: refs } : {}),
+        ...(end ? { end_image_url: end } : {}),
+      },
+    };
+  }
+  if (end) throw new Error("Kling 4.0 needs a start frame for an end frame");
+  if (refs.length || videos.length) {
+    return {
+      path: "kling-video/v4.0/reference-to-video",
+      body: {
+        ...kling4Body(plane),
+        aspect_ratio: aspect,
+        ...(refs.length ? { image_urls: refs } : {}),
+        ...(videos.length ? { video_urls: videos } : {}),
+      },
+    };
+  }
+  return {
+    path: "kling-video/v4.0/text-to-video",
+    // Text to video has no "adaptive"; left out, the platform uses 16:9.
+    body: { ...kling4Body(plane), ...(aspect !== "adaptive" ? { aspect_ratio: aspect } : {}) },
+  };
+}
+
+function mapKling4Edit(plane: GenerationPlane): Mapped {
+  const [video, ...refVideos] = urls(plane, "video");
+  const refs = urls(plane, "reference");
+  if (!video) throw new Error("Kling 4.0 Edit needs a source video");
+  return {
+    path: "kling-video/v4.0/video-edit",
+    body: {
+      ...kling4Body(plane),
+      aspect_ratio: plane.settings.aspectRatio,
+      video_url: video,
+      ...(refs.length ? { image_urls: refs } : {}),
+      ...(refVideos.length ? { video_urls: refVideos } : {}),
     },
   };
 }
